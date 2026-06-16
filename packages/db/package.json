@@ -1,0 +1,28 @@
+{
+  "name": "@opsline/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit",
+    "generate": "drizzle-kit generate",
+    "migrate": "node --env-file=../../.env src/migrate.ts",
+    "seed": "node --env-file=../../.env src/seed.ts"
+  },
+  "dependencies": {
+    "@opsline/core": "workspace:*",
+    "drizzle-orm": "0.45.2",
+    "postgres": "3.4.9"
+  },
+  "devDependencies": {
+    "@types/node": "25.9.3",
+    "drizzle-kit": "0.31.10",
+    "eslint": "9.39.4",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.61.0"
+  }
+}

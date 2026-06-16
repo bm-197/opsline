@@ -1,0 +1,26 @@
+{
+  "name": "opsline",
+  "private": true,
+  "packageManager": "pnpm@10.33.2",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @opsline/web dev",
+    "dev:inngest": "inngest-cli dev -u http://localhost:3000/api/inngest",
+    "dev:cloud": "pnpm --filter @opsline/web dev:cloud",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint && prettier --check .",
+    "format": "prettier --write .",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "db:generate": "pnpm --filter @opsline/db generate",
+    "db:migrate": "pnpm --filter @opsline/db migrate",
+    "db:seed": "pnpm --filter @opsline/db seed",
+    "seed": "pnpm db:seed && pnpm --filter @opsline/web seed:auth"
+  },
+  "devDependencies": {
+    "inngest-cli": "1.27.0",
+    "prettier": "3.8.4"
+  }
+}

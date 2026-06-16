@@ -1,0 +1,140 @@
+@import "tailwindcss";
+
+@theme {
+  --color-canvas: #fbfbfd;
+  --color-ink: #19191d;
+  --color-muted: #626275;
+  --color-faint: #898b91;
+  --color-line: #e7e9ef;
+  --color-card: #ffffff;
+  --color-butter: #ffe02a;
+  --color-blush: #f6e8e7;
+  --color-blush-deep: #f4c9c8;
+  --color-sage: #e9efe8;
+  --color-sage-deep: #a7c3a8;
+  --color-peri: #e8ecf5;
+  --color-peri-deep: #bbc5dd;
+}
+
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-garamond), Georgia, serif;
+  --font-geist: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--color-butter);
+  color: var(--color-ink);
+}
+
+/* Liquid glass. Keep Tailwind shadow utilities off these classes: they replace
+   the box-shadow and wipe the inset highlights. */
+.glass-card {
+  background: rgba(255, 255, 255, 0.55);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  backdrop-filter: blur(24px) saturate(1.8);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.32),
+    0 12px 32px rgba(25, 25, 29, 0.12);
+}
+
+.glass-card-blush {
+  background: color-mix(in srgb, var(--color-blush) 36%, transparent);
+}
+
+.glass-card-sage {
+  background: color-mix(in srgb, var(--color-sage) 36%, transparent);
+}
+
+.glass-card-peri {
+  background: color-mix(in srgb, var(--color-peri) 36%, transparent);
+}
+
+.glass-card-butter {
+  background: color-mix(in srgb, var(--color-butter) 16%, transparent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .glass-card-interactive {
+    transition:
+      transform 200ms ease,
+      box-shadow 200ms ease;
+  }
+
+  .glass-card-interactive:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.65),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.32),
+      0 16px 40px rgba(25, 25, 29, 0.16);
+  }
+}
+
+/* === Landing (cozy-glass) === */
+
+.gradient-ink {
+  background-image: linear-gradient(to right, #19191d, #626275);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Soft daytime sky band behind the hero. */
+.sky-band {
+  background:
+    radial-gradient(
+      64rem 30rem at 50% 60%,
+      rgba(187, 197, 221, 0.5) 0%,
+      rgba(187, 197, 221, 0) 70%
+    ),
+    radial-gradient(
+      40rem 20rem at 14% 8%,
+      rgba(242, 246, 255, 0.9),
+      transparent 65%
+    ),
+    linear-gradient(180deg, #f6f8fd 0%, #eef1f9 42%, #fbfbfd 100%);
+}
+
+.cloud {
+  position: absolute;
+  border-radius: 9999px;
+  background: #fff;
+  filter: blur(44px);
+  opacity: 0.5;
+}
+
+/* Word-rise hero. Words sit in place under reduced motion. */
+.rise-word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.22em;
+  margin-bottom: -0.22em;
+}
+.rise-word > span {
+  display: inline-block;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cloud {
+    animation: cloud-drift 28s ease-in-out infinite alternate;
+  }
+  @keyframes cloud-drift {
+    from {
+      transform: translateX(-5%);
+    }
+    to {
+      transform: translateX(5%);
+    }
+  }
+  .rise-word > span {
+    transform: translateY(1.25em);
+    animation: word-rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  @keyframes word-rise {
+    to {
+      transform: translateY(0);
+    }
+  }
+}
