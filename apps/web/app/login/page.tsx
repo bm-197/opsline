@@ -12,8 +12,8 @@ export default function LoginPage() {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [email, setEmail] = useState("operator@northwind.example");
-  const [password, setPassword] = useState("opsline-demo");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [verifySent, setVerifySent] = useState(false);
@@ -115,12 +115,6 @@ export default function LoginPage() {
                 ? "Need an account? Sign up"
                 : "Have an account? Sign in"}
             </button>
-
-            {mode === "signin" && (
-              <p className="font-geist text-xs text-faint">
-                Demo: operator@northwind.example / opsline-demo
-              </p>
-            )}
           </>
         )}
       </GlassCard>
