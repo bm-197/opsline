@@ -3,14 +3,17 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
+import { ExprField } from "@/components/expr-field";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { cn } from "@/lib/cn";
 import {
+  availableExpressions,
   blankStep,
   STEP_TYPE_LABELS,
   type DraftStep,
   type DraftWorkflow,
+  type ExprGroup,
 } from "@/lib/workflow-draft";
 import { createWorkflow, publishVersion } from "@/lib/workflow-actions";
 
@@ -160,6 +163,11 @@ export function WorkflowEditor({
 
       <div className="flex flex-col gap-3">
         <span className="font-geist text-xs text-faint">Steps</span>
+        <p className="text-xs text-muted">
+          Text fields accept {"{{ }}"} expressions. Use the {"{ }"} button to
+          insert a reference to the trigger payload or an earlier step{"’"}s
+          output.
+        </p>
         {draft.steps.length === 0 && (
           <p className="text-sm text-muted">
             No steps yet. Add one below; they run top to bottom.
@@ -198,6 +206,7 @@ export function WorkflowEditor({
                 </div>
                 <StepFields
                   step={step}
+                  groups={availableExpressions(draft.steps, i)}
                   onChange={(p) => patchStep(step.key, p)}
                 />
               </GlassCard>
@@ -275,9 +284,11 @@ function IconButton({
 
 function StepFields({
   step,
+  groups,
   onChange,
 }: {
   step: DraftStep;
+  groups: ExprGroup[];
   onChange: (patch: Partial<DraftStep>) => void;
 }) {
   const num = (v: string) => (v === "" ? undefined : Number(v));
@@ -343,12 +354,14 @@ function StepFields({
               <option key={m}>{m}</option>
             ))}
           </select>
-          <input
-            className={inputCls}
-            value={step.url ?? ""}
-            onChange={(e) => onChange({ url: e.target.value })}
-            placeholder="https://api.example.com/thing"
-          />
+          <div className="flex-1">
+            <ExprField
+              value={step.url ?? ""}
+              onChange={(url) => onChange({ url })}
+              groups={groups}
+              placeholder="https://api.example.com/thing"
+            />
+          </div>
         </div>
         {advancedRetry}
       </>
@@ -374,10 +387,10 @@ function StepFields({
       <>
         {labelField}
         <Field label="Prompt">
-          <input
-            className={inputCls}
+          <ExprField
             value={step.prompt ?? ""}
-            onChange={(e) => onChange({ prompt: e.target.value })}
+            onChange={(prompt) => onChange({ prompt })}
+            groups={groups}
             placeholder="Approve this?"
           />
         </Field>
@@ -397,25 +410,26 @@ function StepFields({
       <>
         {labelField}
         <Field label="To">
-          <input
-            className={inputCls}
+          <ExprField
             value={step.to ?? ""}
-            onChange={(e) => onChange({ to: e.target.value })}
+            onChange={(to) => onChange({ to })}
+            groups={groups}
+            placeholder="ops@example.com"
           />
         </Field>
         <Field label="Subject">
-          <input
-            className={inputCls}
+          <ExprField
             value={step.subject ?? ""}
-            onChange={(e) => onChange({ subject: e.target.value })}
+            onChange={(subject) => onChange({ subject })}
+            groups={groups}
           />
         </Field>
         <Field label="Body">
-          <textarea
-            rows={2}
-            className={cn(inputCls, "resize-none")}
+          <ExprField
             value={step.body ?? ""}
-            onChange={(e) => onChange({ body: e.target.value })}
+            onChange={(body) => onChange({ body })}
+            groups={groups}
+            multiline
           />
         </Field>
         {advancedRetry}
@@ -426,17 +440,18 @@ function StepFields({
     <>
       {labelField}
       <Field label="Slack webhook URL">
-        <input
-          className={inputCls}
+        <ExprField
           value={step.webhookUrl ?? ""}
-          onChange={(e) => onChange({ webhookUrl: e.target.value })}
+          onChange={(webhookUrl) => onChange({ webhookUrl })}
+          groups={groups}
+          placeholder="https://hooks.slack.com/services/..."
         />
       </Field>
       <Field label="Message">
-        <input
-          className={inputCls}
+        <ExprField
           value={step.text ?? ""}
-          onChange={(e) => onChange({ text: e.target.value })}
+          onChange={(text) => onChange({ text })}
+          groups={groups}
         />
       </Field>
       {advancedRetry}

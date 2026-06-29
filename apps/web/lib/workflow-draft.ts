@@ -181,3 +181,55 @@ export function irToDraft(
     editable,
   };
 }
+
+// An insertable expression reference offered in the editor. `insert` is the
+// path that goes inside {{ }}; `caretInside` leaves the cursor there so the
+// user can finish typing (used for the trigger payload, whose fields we cannot
+// know ahead of time).
+export type ExprRef = { label: string; insert: string; caretInside?: boolean };
+export type ExprGroup = { label: string; refs: ExprRef[] };
+
+// The output keys each step type exposes once it has run, for the variable
+// picker. Mirrors what the engine records as a step's output.
+function outputRefs(stepId: string, type: DraftStep["type"]): ExprRef[] {
+  const base = `steps.${stepId}.output`;
+  switch (type) {
+    case "http_request":
+      return [
+        { label: "status", insert: `${base}.status` },
+        { label: "body", insert: `${base}.body` },
+      ];
+    case "send_email":
+      return [{ label: "id", insert: `${base}.id` }];
+    case "slack_webhook":
+      return [{ label: "posted", insert: `${base}.posted` }];
+    case "delay":
+      return [{ label: "sleptMs", insert: `${base}.sleptMs` }];
+    case "human_approval":
+      return [{ label: "decision", insert: `${base}.decision` }];
+  }
+}
+
+// The expressions referenceable from the step at `index`: the trigger payload
+// plus the output of every step before it (step ids are positional, matching
+// draftToIrInput).
+export function availableExpressions(
+  steps: DraftStep[],
+  index: number,
+): ExprGroup[] {
+  const groups: ExprGroup[] = [
+    {
+      label: "Trigger",
+      refs: [{ label: "trigger.…", insert: "trigger.", caretInside: true }],
+    },
+  ];
+  for (let j = 0; j < index; j++) {
+    const s = steps[j]!;
+    const name = s.name?.trim() || STEP_TYPE_LABELS[s.type];
+    groups.push({
+      label: `Step ${j + 1} · ${name}`,
+      refs: outputRefs(`step_${j + 1}`, s.type),
+    });
+  }
+  return groups;
+}
