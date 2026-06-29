@@ -25,7 +25,7 @@ export default function LoginPage() {
         if (mode === "signin") {
           const res = await authClient.signIn.email({ email, password });
           if (res.error) throw new Error(res.error.message ?? "Sign in failed");
-          router.push("/runs");
+          router.push("/dashboard");
           router.refresh();
         } else {
           const res = await authClient.signUp.email({ email, password, name });

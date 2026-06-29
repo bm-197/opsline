@@ -61,7 +61,7 @@ export const auth = betterAuth({
     autoSignInAfterVerification: true,
     async sendVerificationEmail({ user, token }) {
       const base = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
-      const verifyUrl = `${base}/api/auth/verify-email?token=${token}&callbackURL=/runs`;
+      const verifyUrl = `${base}/api/auth/verify-email?token=${token}&callbackURL=/dashboard`;
       await mailer.send({
         to: user.email,
         subject: "Verify your email for Opsline",

@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { SearchIcon } from "@/components/search-trigger";
 
 const nav = [
+  { label: "Dashboard", href: "/dashboard" },
   { label: "Runs", href: "/runs" },
   { label: "Approvals", href: "/approvals" },
   { label: "Workflows", href: "/workflows" },
@@ -20,7 +21,12 @@ export function CommandPalette() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+      // Match the physical K key (e.code) so Caps Lock, Shift, and non-US
+      // layouts still trigger it, not just a lowercase "k".
+      if (
+        (e.metaKey || e.ctrlKey) &&
+        (e.code === "KeyK" || e.key.toLowerCase() === "k")
+      ) {
         e.preventDefault();
         setOpen((o) => !o);
       } else if (e.key === "Escape") {

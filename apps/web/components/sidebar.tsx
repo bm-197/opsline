@@ -12,6 +12,14 @@ import { cn } from "@/lib/cn";
 type IconProps = { className?: string };
 
 const icons: Record<string, (p: IconProps) => React.ReactElement> = {
+  dashboard: (p) => (
+    <Icon {...p}>
+      <rect x="3" y="3" width="7" height="7" rx="1.5" />
+      <rect x="14" y="3" width="7" height="7" rx="1.5" />
+      <rect x="3" y="14" width="7" height="7" rx="1.5" />
+      <rect x="14" y="14" width="7" height="7" rx="1.5" />
+    </Icon>
+  ),
   runs: (p) => (
     <Icon {...p}>
       <path d="M4 6h10M4 12h16M4 18h7" />
@@ -156,8 +164,8 @@ function UserMenu({
 type Org = { id: string; name: string; logo: string | null };
 
 // Workspace switcher. Lists every org the user belongs to, marks the active
-// one, and sets a new active org via Better Auth before landing on /runs (data
-// is org-scoped, so the current page may not exist in the new workspace).
+// one, and sets a new active org via Better Auth before landing on /dashboard
+// (data is org-scoped, so the current page may not exist in the new workspace).
 function OrgSwitcher({
   orgs,
   activeOrgId,
@@ -183,7 +191,7 @@ function OrgSwitcher({
     start(async () => {
       await authClient.organization.setActive({ organizationId: id });
       onNavigate?.();
-      router.push("/runs");
+      router.push("/dashboard");
       router.refresh();
     });
   };
@@ -290,6 +298,7 @@ function CreateButton({
 }
 
 const links = [
+  { href: "/dashboard", label: "Dashboard", icon: "dashboard" },
   { href: "/runs", label: "Runs", icon: "runs" },
   { href: "/approvals", label: "Approvals", icon: "approvals" },
   { href: "/workflows", label: "Workflows", icon: "workflows" },

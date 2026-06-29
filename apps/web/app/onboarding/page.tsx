@@ -39,7 +39,7 @@ export default function OnboardingPage() {
           organizationId: org.data.id,
         });
       }
-      router.push("/runs");
+      router.push("/dashboard");
       router.refresh();
     });
 
