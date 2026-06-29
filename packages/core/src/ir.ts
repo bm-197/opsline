@@ -49,11 +49,29 @@ const baseStepFields = {
   retry: retryConfigSchema.optional(),
 };
 
+// A {{ expression }} anywhere in a field. A URL that carries one cannot be
+// validated as a URL until the run resolves it, so the schema accepts either.
+const TEMPLATE_RE = /\{\{[^{}]+\}\}/;
+const isUrl = (s: string) => {
+  try {
+    new URL(s);
+    return true;
+  } catch {
+    return false;
+  }
+};
+const templatableUrl = z
+  .string()
+  .min(1)
+  .refine((s) => TEMPLATE_RE.test(s) || isUrl(s), {
+    message: "must be a valid URL or contain a {{ expression }}",
+  });
+
 const httpRequestStep = z.object({
   ...baseStepFields,
   type: z.literal("http_request"),
   method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
-  url: z.string().url(),
+  url: templatableUrl,
   headers: z.record(z.string(), z.string()).optional(),
   body: z.unknown().optional(),
   timeoutMs: z.number().int().min(1).max(300_000).default(30_000),
@@ -84,7 +102,7 @@ const sendEmailStep = z.object({
 const slackWebhookStep = z.object({
   ...baseStepFields,
   type: z.literal("slack_webhook"),
-  webhookUrl: z.string().url(),
+  webhookUrl: templatableUrl,
   text: z.string().min(1),
 });
 
@@ -151,7 +169,33 @@ export const workflowIrSchema = z
       }
     };
     walk(ir.steps);
+
+    // Every {{ steps.X.* }} expression must reference a known step.
+    const refs = new Set<string>();
+    collectStepRefs(ir.steps, refs);
+    for (const ref of refs) {
+      if (!seen.has(ref)) {
+        ctx.addIssue({
+          code: "custom",
+          message: `expression references unknown step: ${ref}`,
+          path: ["steps"],
+        });
+      }
+    }
   });
+
+// Collect every step id referenced by a {{ steps.<id>... }} expression in any
+// string field of the given values.
+const STEP_REF = /\{\{\s*steps\.([a-z][a-z0-9_]*)/g;
+function collectStepRefs(value: unknown, acc: Set<string>): void {
+  if (typeof value === "string") {
+    for (const match of value.matchAll(STEP_REF)) acc.add(match[1]!);
+  } else if (Array.isArray(value)) {
+    for (const item of value) collectStepRefs(item, acc);
+  } else if (value && typeof value === "object") {
+    for (const v of Object.values(value)) collectStepRefs(v, acc);
+  }
+}
 
 export type WorkflowIr = z.infer<typeof workflowIrSchema>;
 

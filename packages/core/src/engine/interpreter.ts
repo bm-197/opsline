@@ -8,6 +8,7 @@ import {
   isRetryable,
   serializeError,
 } from "./retry.ts";
+import { resolveStepConfig, resolveStringField } from "./templates.ts";
 import type { RunStore, StepHistory } from "./store.ts";
 
 // The subset of Inngest's step tooling the interpreter needs. The Inngest
@@ -184,13 +185,14 @@ async function executeStep(
   }
 
   if (step.type === "human_approval") {
+    const prompt = resolveStringField(step.prompt, context);
     const begin = await tools.run(`approval-begin:${step.id}`, async () => {
       const { stepRunId } = await store.startStep({
         runId,
         stepId: step.id,
         attempt: 1,
         state: "waiting",
-        input: { prompt: step.prompt },
+        input: { prompt },
       });
       const { approvalId } = await store.createApproval(stepRunId);
       await store.setRunState(runId, "waiting", {
@@ -281,7 +283,9 @@ async function executeStep(
 
   // http_request, send_email, slack_webhook: retried per the IR's config.
   // Attempt numbers continue past any prior attempts so a retry-from-step adds
-  // new attempts rather than overwriting the failed ones.
+  // new attempts rather than overwriting the failed ones. Config is resolved
+  // against the run context once, so every attempt sends the same values.
+  const resolved = resolveStepConfig(step, context);
   const retry = step.retry ?? DEFAULT_RETRY;
   const base = prior?.maxAttempt ?? 0;
   let failed = false;
@@ -293,11 +297,11 @@ async function executeStep(
         stepId: step.id,
         attempt,
         state: "running",
-        input: activityInput(step),
+        input: activityInput(resolved),
       });
       try {
         const output = await runActivity(
-          step,
+          resolved,
           idempotencyKey(runId, step.id, attempt),
           activity,
         );

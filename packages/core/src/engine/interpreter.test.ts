@@ -128,6 +128,46 @@ describe("interpretRun: happy path", () => {
   });
 });
 
+describe("interpretRun: expressions", () => {
+  it("resolves {{ }} from trigger and a prior step's output", async () => {
+    const ir = validateWorkflowIr({
+      name: "wf",
+      steps: [
+        {
+          id: "fetch",
+          type: "http_request",
+          method: "GET",
+          url: "https://x.test/{{ trigger.id }}",
+        },
+        {
+          id: "notify",
+          type: "send_email",
+          to: "{{ trigger.email }}",
+          subject: "Order {{ trigger.id }}",
+          body: "Status {{ steps.fetch.output.status }}, call {{ steps.fetch.output.body.call }}",
+        },
+      ],
+    });
+    const store = makeStore(ir, { id: "ord_9", email: "ops@x.test" });
+    const urls: string[] = [];
+    const fetchImpl = (async (url: string) => {
+      urls.push(url);
+      return new Response(JSON.stringify({ call: 7 }), { status: 200 });
+    }) as unknown as typeof fetch;
+    const mail = spyMailer();
+
+    const result = await interpretRun(
+      deps(store, makeTools(), { fetchImpl, mailer: mail.mailer }),
+    );
+
+    expect(result.state).toBe("succeeded");
+    expect(urls[0]).toBe("https://x.test/ord_9");
+    expect(mail.calls[0]?.to).toBe("ops@x.test");
+    expect(mail.calls[0]?.subject).toBe("Order ord_9");
+    expect(mail.calls[0]?.body).toBe("Status 200, call 7");
+  });
+});
+
 describe("interpretRun: retries", () => {
   it("retries a 5xx until it succeeds, recording each attempt", async () => {
     const ir = validateWorkflowIr({
