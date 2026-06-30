@@ -29,8 +29,6 @@ pnpm dev                    # http://localhost:3000
 pnpm dev:inngest            # http://localhost:8288 (durable execution)
 ```
 
-Sign in with the demo account: **operator@northwind.example / opsline-demo**.
-
 ## The demo
 
 Trigger the "Approval demo" or "Supplier invoice approval" workflow from `/workflows` (or POST a signed request to the workflow's webhook endpoint shown on its page). Watch the run on `/runs/[id]` move through its steps, approve it from `/approvals`, see the email step fire, fail an HTTP step and retry just that step, and find every action on `/audit`.
@@ -51,5 +49,3 @@ Trigger the "Approval demo" or "Supplier invoice approval" workflow from `/workf
 - `/login`, `/` (landing), `/accept-invite` are public; everything else is gated by `middleware.ts`.
 - Authenticated routes live under `app/(app)/` with the sidebar shell; the org/role comes from the session via `lib/context.ts`.
 - Roles: **viewer** (read-only), **operator** (run/approve), **admin** (everything). Enforced in server actions and gated in the UI.
-
-Engineering decisions are logged in [DECISIONS.md](./DECISIONS.md).
